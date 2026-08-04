@@ -1,0 +1,186 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Uji Coba Dashboard - Trend Only Strategy</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+    <div class="dashboard">
+        <!-- Header -->
+        <header class="header">
+            <div class="header-left">
+                <h1><i class="fas fa-chart-line"></i> UJI COBA DASHBOARD</h1>
+                <p class="subtitle">Trend-Only Strategy - Kompas100 Stocks</p>
+            </div>
+            <div class="header-right">
+                <div class="engine-status">
+                    <span class="status-dot active"></span>
+                    Engine Active
+                </div>
+                <button class="btn-scan" onclick="refreshData()">
+                    <i class="fas fa-sync-alt"></i> Refresh
+                </button>
+            </div>
+        </header>
+
+        <!-- Metrics Cards -->
+        <section class="metrics-grid">
+            <div class="metric-card win-rate">
+                <div class="metric-icon"><i class="fas fa-bullseye"></i></div>
+                <div class="metric-info">
+                    <span class="metric-label">Winning Ratio</span>
+                    <span class="metric-value" id="win-rate">0.0%</span>
+                </div>
+            </div>
+            <div class="metric-card profit-factor">
+                <div class="metric-icon"><i class="fas fa-trending-up"></i></div>
+                <div class="metric-info">
+                    <span class="metric-label">Profit Factor</span>
+                    <span class="metric-value" id="profit-factor">0.00</span>
+                </div>
+            </div>
+            <div class="metric-card avg-win">
+                <div class="metric-icon"><i class="fas fa-arrow-up"></i></div>
+                <div class="metric-info">
+                    <span class="metric-label">Average Win</span>
+                    <span class="metric-value" id="avg-win">+0.00%</span>
+                </div>
+            </div>
+            <div class="metric-card avg-loss">
+                <div class="metric-icon"><i class="fas fa-arrow-down"></i></div>
+                <div class="metric-info">
+                    <span class="metric-label">Average Loss</span>
+                    <span class="metric-value" id="avg-loss">0.00%</span>
+                </div>
+            </div>
+            <div class="metric-card net-profit">
+                <div class="metric-icon"><i class="fas fa-wallet"></i></div>
+                <div class="metric-info">
+                    <span class="metric-label">Net Profit</span>
+                    <span class="metric-value" id="net-profit">0.00%</span>
+                </div>
+            </div>
+            <div class="metric-card active-positions">
+                <div class="metric-icon"><i class="fas fa-briefcase"></i></div>
+                <div class="metric-info">
+                    <span class="metric-label">Active Positions</span>
+                    <span class="metric-value" id="active-positions">0</span>
+                </div>
+            </div>
+        </section>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <!-- Tabs -->
+            <div class="tabs">
+                <button class="tab active" data-tab="signals">
+                    <i class="fas fa-signal"></i> Sinyal & Posisi
+                </button>
+                <button class="tab" data-tab="history">
+                    <i class="fas fa-history"></i> Riwayat Trade
+                </button>
+                <button class="tab" data-tab="pending">
+                    <i class="fas fa-clock"></i> Pending Besok
+                </button>
+            </div>
+
+            <!-- Signals & Positions Tab -->
+            <div class="tab-content active" id="signals-tab">
+                <div class="tab-filters">
+                    <button class="filter-btn active" data-filter="all">Semua</button>
+                    <button class="filter-btn" data-filter="active">Posisi Aktif</button>
+                    <button class="filter-btn" data-filter="pending">Pending Besok</button>
+                </div>
+
+                <div class="table-container">
+                    <table class="data-table">
+                        <thead>
+                            <tr>
+                                <th>Saham</th>
+                                <th>Aksi</th>
+                                <th>Tgl Beli</th>
+                                <th>Harga Beli</th>
+                                <th>Harga Sekarang</th>
+                                <th>Floating %</th>
+                                <th>Status</th>
+                                <th>Aksi</th>
+                            </tr>
+                        </thead>
+                        <tbody id="positions-table">
+                            <tr>
+                                <td colspan="8" class="loading">Memuat data...</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- History Tab -->
+            <div class="tab-content" id="history-tab">
+                <div class="table-container">
+                    <table class="data-table">
+                        <thead>
+                            <tr>
+                                <th>Saham</th>
+                                <th>Tgl Beli</th>
+                                <th>Harga Beli</th>
+                                <th>Tgl Jual</th>
+                                <th>Harga Jual</th>
+                                <th>Hasil %</th>
+                            </tr>
+                        </thead>
+                        <tbody id="history-table">
+                            <tr>
+                                <td colspan="6" class="loading">Memuat riwayat...</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Pending Tab -->
+            <div class="tab-content" id="pending-tab">
+                <div class="table-container">
+                    <table class="data-table">
+                        <thead>
+                            <tr>
+                                <th>Saham</th>
+                                <th>Sinyal</th>
+                                <th>Harga Entry</th>
+                                <th>Day-1 Outlook</th>
+                                <th>MACD</th>
+                                <th>Signal Line</th>
+                                <th>Status</th>
+                            </tr>
+                        </thead>
+                        <tbody id="pending-table">
+                            <tr>
+                                <td colspan="7" class="loading">Memuat sinyal...</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </main>
+
+        <!-- Performance Map -->
+        <section class="performance-map">
+            <h2><i class="fas fa-th-large"></i> Peta Performa Posisi Aktif</h2>
+            <div class="performance-grid" id="performance-grid">
+                <!-- Dynamic content -->
+            </div>
+        </section>
+
+        <!-- Footer -->
+        <footer class="footer">
+            <p>Uji Coba Dashboard v1.0.0 | Trend-Only Strategy | Kompas100 Stocks</p>
+            <p class="timestamp" id="last-update">Last update: -</p>
+        </footer>
+    </div>
+
+    <script src="{{ url_for('static', filename='js/dashboard.js') }}"></script>
+</body>
+</html>

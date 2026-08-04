@@ -1,0 +1,69 @@
+================================================================================
+CARA TERMUDAH DEPLOY TANPA INSTALL GIT
+Untuk: haidardimas95-creator
+================================================================================
+
+PERINGATAN: Silakan GANTI PASSWORD GITHUB Anda segera karena sudah ter-share!
+
+================================================================================
+LANGKAH 1: BUAT REPOSITORY DI GITHUB (via Browser)
+================================================================================
+
+1. Buka: https://github.com/new
+2. Login dengan: haidardimas95@gmail.com
+3. Isi:
+   - Repository name: ujicoba-dashboard
+   - Visibility: Public
+4. TIDAK centang "Initialize with README"
+5. Klik "Create repository"
+
+================================================================================
+LANGKAH 2: UPLOAD KODE MANUAL (via GitHub Website)
+================================================================================
+
+Setelah repository dibuat:
+
+1. Di halaman repository, klik "uploading an existing file"
+2. DRAG & DROP SEMUA FILE dari folder:
+   C:\Users\Aldi Firmansyah\Desktop\ujicoba-dashboard\
+
+   File yang perlu diupload:
+   ✓ app.py
+   ✓ requirements.txt
+   ✓ README.md
+   ✓ RAILWAY_DEPLOY.md
+   ✓ railway.json
+   ✓ Procfile
+   ✓ Dockerfile
+   ✓ .gitignore
+   ✓ FOLDER templates/ (drag seluruh folder)
+     └ index.html
+   ✓ FOLDER static/ (drag seluruh folder)
+     └ css/style.css
+     └ js/dashboard.js
+
+3. Scroll ke bawah
+4. Isi commit message: "Initial commit"
+5. Klik "Commit changes"
+
+================================================================================
+LANGKAH 3: DEPLOY KE RAILWAY (via Browser)
+================================================================================
+
+1. Buka: https://railway.app
+2. Login dengan GitHub
+3. Klik "New Project"
+4. Pilih "Deploy from GitHub repo"
+5. Cari dan pilih: ujicoba-dashboard
+6. Klik "Deploy Now"
+7. Tunggu 2-5 menit
+8. Dashboard live di URL dari Railway!
+
+================================================================================
+SELESAI!
+================================================================================
+
+Dashboard Anda sudah live di:
+https://ujicoba-dashboard-xxxx.up.railway.app
+
+================================================================================
