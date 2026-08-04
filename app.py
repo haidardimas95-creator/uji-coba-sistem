@@ -427,11 +427,8 @@ def calculate_metrics():
 @app.route('/')
 def index():
     """Dashboard home"""
-    return jsonify({
-        'app': 'Uji Coba Dashboard - Trend Only Strategy',
-        'version': '1.0.0',
-        'status': 'running',
-    })
+    from flask import render_template
+    return render_template('index.html')
 
 
 @app.route('/api/metrics', methods=['GET'])
