@@ -593,7 +593,7 @@ def main():
     scheduler_thread = threading.Thread(target=run_schedule, daemon=True)
     scheduler_thread.start()
     
-    app.run(host='0.0.0.0', port=5000, debug=True)
+    app.run(host='0.0.0.0', port=int(os.environ.get('PORT', 5000)), debug=False)
 
 
 if __name__ == '__main__':
