@@ -63,8 +63,8 @@ ALL_TICKERS = [
     'GPRA.JK', 'HRUM.JK', 'INTP.JK', 'TRIM.JK',
 ]
 
-USE_FEATURED_ONLY = os.environ.get('USE_FEATURED_ONLY', 'true').lower() == 'true'
-TICKERS = FEATURED_TICKERS if USE_FEATURED_ONLY else ALL_TICKERS
+# Always use featured tickers for faster scanning
+TICKERS = FEATURED_TICKERS
 
 TRANSACTION_COST = 0.003
 
