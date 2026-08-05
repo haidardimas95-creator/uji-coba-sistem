@@ -46,7 +46,7 @@ function initTabs() {
 // === LOAD METRICS ===
 async function loadMetrics() {
     try {
-        const response = await fetch(`${API_BASE}/metrics`);
+        const response = await fetch(`${API_BASE}/metrics`, { signal: AbortSignal.timeout(15000) });
         const metrics = await response.json();
         
         document.getElementById('win-rate').textContent = `${metrics.win_rate}%`;
@@ -63,13 +63,15 @@ async function loadMetrics() {
         updateTimestamp();
     } catch (error) {
         console.error('Error loading metrics:', error);
+        document.getElementById('win-rate').textContent = 'N/A';
+        document.getElementById('profit-factor').textContent = 'N/A';
     }
 }
 
 // === LOAD POSITIONS ===
 async function loadPositions() {
     try {
-        const response = await fetch(`${API_BASE}/positions`);
+        const response = await fetch(`${API_BASE}/positions`, { signal: AbortSignal.timeout(30000) });
         const data = await response.json();
         
         const tbody = document.getElementById('positions-table');
@@ -106,13 +108,14 @@ async function loadPositions() {
         updatePerformanceMap(data.positions);
     } catch (error) {
         console.error('Error loading positions:', error);
+        document.getElementById('positions-table').innerHTML = '<tr><td colspan="8" class="loading">Gagal memuat data posisi. Coba klik "Refresh".</td></tr>';
     }
 }
 
 // === LOAD HISTORY ===
 async function loadHistory() {
     try {
-        const response = await fetch(`${API_BASE}/history`);
+        const response = await fetch(`${API_BASE}/history`, { signal: AbortSignal.timeout(10000) });
         const data = await response.json();
         
         const tbody = document.getElementById('history-table');
@@ -144,8 +147,10 @@ async function loadHistory() {
 // === LOAD SIGNALS (PENDING) ===
 async function loadSignals() {
     try {
-        const response = await fetch(`${API_BASE}/signals`);
+        console.log('Loading signals...');
+        const response = await fetch(`${API_BASE}/signals`, { signal: AbortSignal.timeout(60000) });
         const data = await response.json();
+        console.log('Signals loaded:', data);
         
         const tbody = document.getElementById('pending-table');
         if (data.signals.length === 0) {
@@ -171,6 +176,7 @@ async function loadSignals() {
         }).join('');
     } catch (error) {
         console.error('Error loading signals:', error);
+        document.getElementById('pending-table').innerHTML = '<tr><td colspan="7" class="loading">Gagal memuat sinyal. API mungkin sedang loading atau timeout. Coba klik "Refresh".</td></tr>';
     }
 }
 

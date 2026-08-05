@@ -194,11 +194,18 @@ def scan_all_stocks():
     """
     signals = []
     
+    # Use only last 6 months to avoid timeout on Railway
+    today = datetime.now()
+    start_date = (today - timedelta(days=180)).strftime('%Y-%m-%d')
+    end_date = today.strftime('%Y-%m-%d')
+    
     for ticker in TICKERS:
         try:
-            df = yf.download(ticker, start='2024-01-01', end='2026-12-31', progress=False, threads=True, timeout=20)
+            print(f"  Scanning {ticker}...")
+            df = yf.download(ticker, start=start_date, end=end_date, progress=False, threads=True, timeout=30)
             
             if df is None or df.empty:
+                print(f"    {ticker}: No data")
                 continue
             
             if isinstance(df.columns, pd.MultiIndex):
@@ -210,8 +217,11 @@ def scan_all_stocks():
             df = df.dropna(subset=['Close'])
             df = df.reset_index(drop=True)
             
-            if len(df) < 60:
+            if len(df) < 30:
+                print(f"    {ticker}: Not enough data ({len(df)} days)")
                 continue
+            
+            print(f"    {ticker}: OK ({len(df)} days, Close={df.iloc[-1]['Close']:.2f}")
             
             # Get last trading day info
             last_row = df.iloc[-1]
@@ -290,7 +300,10 @@ def open_position(ticker, price=None):
         return {'error': 'Position already exists'}
     
     try:
-        df = yf.download(ticker, start='2024-01-01', progress=False, threads=True, timeout=20)
+        # Use 6 months instead of years to avoid timeout
+        today = datetime.now()
+        start_date = (today - timedelta(days=180)).strftime('%Y-%m-%d')
+        df = yf.download(ticker, start=start_date, progress=False, threads=True, timeout=30)
         
         if df is None or df.empty:
             return {'error': 'Cannot fetch data'}
@@ -332,9 +345,13 @@ def get_positions_with_data():
     positions = load_positions()
     result = []
     
+    # Use 6 months instead of years to avoid timeout
+    today = datetime.now()
+    start_date = (today - timedelta(days=180)).strftime('%Y-%m-%d')
+    
     for pos in positions:
         try:
-            df = yf.download(pos['ticker'], start='2024-01-01', progress=False, threads=True, timeout=20)
+            df = yf.download(pos['ticker'], start=start_date, progress=False, threads=True, timeout=30)
             
             if df is None or df.empty:
                 result.append({
@@ -543,7 +560,10 @@ def close_position(ticker):
         return jsonify({'error': 'Position not found'}), 404
     
     try:
-        df = yf.download(ticker, start='2024-01-01', progress=False, threads=True, timeout=20)
+        # Use 6 months instead of years to avoid timeout
+        today = datetime.now()
+        start_date = (today - timedelta(days=180)).strftime('%Y-%m-%d')
+        df = yf.download(ticker, start=start_date, progress=False, threads=True, timeout=30)
         
         if df is None or df.empty:
             return jsonify({'error': 'Cannot fetch data'}), 400
