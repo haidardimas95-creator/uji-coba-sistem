@@ -8,7 +8,7 @@
 # ============================================================================
 
 $GITHUB_TOKEN = "YOUR_GITHUB_PAT_HERE"  # Replace with your actual PAT
-$GITHUB_USERNAME = "haidardimas95"      # Your GitHub username
+$GITHUB_USERNAME = "haidardimas95-creator"      # Your GitHub username
 $REPO_NAME = "ujicoba-dashboard"
 
 $GIT_PATH = "C:\Program Files\Git\bin\git.exe"
