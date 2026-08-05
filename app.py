@@ -187,17 +187,19 @@ def scan_all_stocks():
     
     for ticker in TICKERS:
         try:
-            df = yf.download(ticker, start='2024-01-01', end='2026-12-31', progress=False)
+            df = yf.download(ticker, start='2024-01-01', end='2026-12-31', progress=False, threads=True, timeout=20)
             
-            if df.empty:
+            if df is None or df.empty:
                 continue
             
             if isinstance(df.columns, pd.MultiIndex):
                 df = df.droplevel(1, axis=1)
             
-            df = df.reset_index()
-            df['Date'] = pd.to_datetime(df['Date'])
-            df = df.sort_values('Date').reset_index(drop=True)
+            if 'Date' not in df.columns:
+                df = df.reset_index()
+            
+            df = df.dropna(subset=['Close'])
+            df = df.reset_index(drop=True)
             
             if len(df) < 60:
                 continue
@@ -205,10 +207,10 @@ def scan_all_stocks():
             # Get last trading day info
             last_row = df.iloc[-1]
             date_str = str(last_row['Date'].date())
-            open_price = float(last_row['Open'])
+            open_price = float(last_row['Open']) if 'Open' in df.columns else float(last_row['Close'])
             close_price = float(last_row['Close'])
-            high_price = float(last_row['High'])
-            low_price = float(last_row['Low'])
+            high_price = float(last_row['High']) if 'High' in df.columns else close_price
+            low_price = float(last_row['Low']) if 'Low' in df.columns else close_price
             volume = int(last_row['Volume']) if 'Volume' in df.columns else 0
             
             # Check entry signal
@@ -263,6 +265,8 @@ def scan_all_stocks():
                     save_positions(positions)
         
         except Exception as e:
+            import logging
+            logging.error(f"Error scanning {ticker}: {e}")
             continue
     
     return signals
@@ -277,16 +281,22 @@ def open_position(ticker, price=None):
         return {'error': 'Position already exists'}
     
     try:
-        df = yf.download(ticker, start='2024-01-01', progress=False)
+        df = yf.download(ticker, start='2024-01-01', progress=False, threads=True, timeout=20)
         
-        if df.empty:
+        if df is None or df.empty:
             return {'error': 'Cannot fetch data'}
         
         if isinstance(df.columns, pd.MultiIndex):
             df = df.droplevel(1, axis=1)
         
-        df = df.reset_index()
-        df = df.sort_values('Date').reset_index(drop=True)
+        if 'Date' not in df.columns:
+            df = df.reset_index()
+        
+        df = df.dropna(subset=['Close'])
+        df = df.reset_index(drop=True)
+        
+        if len(df) == 0:
+            return {'error': 'No data available'}
         
         last_row = df.iloc[-1]
         entry_price = price if price else float(last_row['Close'])
@@ -315,16 +325,42 @@ def get_positions_with_data():
     
     for pos in positions:
         try:
-            df = yf.download(pos['ticker'], start='2024-01-01', progress=False)
+            df = yf.download(pos['ticker'], start='2024-01-01', progress=False, threads=True, timeout=20)
             
-            if df.empty:
+            if df is None or df.empty:
+                result.append({
+                    'ticker': pos['ticker'],
+                    'entry_date': pos['entry_date'],
+                    'entry_price': pos['entry_price'],
+                    'current_price': pos['entry_price'],
+                    'floating_pct': 0,
+                    'days_held': 0,
+                    'status': 'NO_DATA',
+                    'exit_reason': 'Cannot fetch data',
+                })
                 continue
             
             if isinstance(df.columns, pd.MultiIndex):
                 df = df.droplevel(1, axis=1)
             
-            df = df.reset_index()
+            if 'Date' not in df.columns:
+                df = df.reset_index()
+            
+            df = df.dropna(subset=['Close'])
             df = df.sort_values('Date').reset_index(drop=True)
+            
+            if len(df) == 0:
+                result.append({
+                    'ticker': pos['ticker'],
+                    'entry_date': pos['entry_date'],
+                    'entry_price': pos['entry_price'],
+                    'current_price': pos['entry_price'],
+                    'floating_pct': 0,
+                    'days_held': 0,
+                    'status': 'NO_DATA',
+                    'exit_reason': 'No data available',
+                })
+                continue
             
             last_row = df.iloc[-1]
             current_price = float(last_row['Close'])
@@ -498,16 +534,22 @@ def close_position(ticker):
         return jsonify({'error': 'Position not found'}), 404
     
     try:
-        df = yf.download(ticker, start='2024-01-01', progress=False)
+        df = yf.download(ticker, start='2024-01-01', progress=False, threads=True, timeout=20)
         
-        if df.empty:
+        if df is None or df.empty:
             return jsonify({'error': 'Cannot fetch data'}), 400
         
         if isinstance(df.columns, pd.MultiIndex):
             df = df.droplevel(1, axis=1)
         
-        df = df.reset_index()
+        if 'Date' not in df.columns:
+            df = df.reset_index()
+        
+        df = df.dropna(subset=['Close'])
         df = df.sort_values('Date').reset_index(drop=True)
+        
+        if len(df) == 0:
+            return jsonify({'error': 'No data available'}), 400
         
         last_row = df.iloc[-1]
         exit_price = float(last_row['Close'])
