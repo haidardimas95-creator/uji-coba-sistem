@@ -1,4 +1,4 @@
-# Build v2 - Clear cache
+# Build v3 - Featured tickers only
 FROM python:3.12-slim
 
 WORKDIR /app

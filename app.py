@@ -43,7 +43,7 @@ STORAGE_FILE = os.path.join(os.path.dirname(__file__), 'data', 'positions.json')
 METRICS_FILE = os.path.join(os.path.dirname(__file__), 'data', 'metrics.json')
 HISTORY_FILE = os.path.join(os.path.dirname(__file__), 'data', 'history.json')
 
-# Featured stocks for scanning (high liquidity)
+# Featured stocks for scanning (high liquidity - limited to avoid timeout)
 FEATURED_TICKERS = [
     'BBCA.JK', 'BBRI.JK', 'BMRI.JK', 'BBNI.JK',
     'ASII.JK', 'UNVR.JK', 'TLKM.JK', 'INDF.JK', 'MYOR.JK', 'GOTO.JK',
@@ -63,7 +63,7 @@ ALL_TICKERS = [
     'GPRA.JK', 'HRUM.JK', 'INTP.JK', 'TRIM.JK',
 ]
 
-# Always use featured tickers for faster scanning
+# FIXED: Always use featured tickers only for production stability
 TICKERS = FEATURED_TICKERS
 
 TRANSACTION_COST = 0.003
@@ -593,63 +593,20 @@ def close_position(ticker):
         return jsonify({'error': str(e)}), 500
 
 
+@app.route('/api/config', methods=['GET'])
+def get_config():
+    """Get current configuration"""
+    return jsonify({
+        'ticker_count': len(TICKERS),
+        'tickers': TICKERS,
+        'use_featured_only': True,
+    })
+
+
 @app.route('/api/tickers', methods=['GET'])
 def get_tickers():
     """Get list of monitored tickers"""
     return jsonify({'tickers': TICKERS, 'count': len(TICKERS)})
-
-
-@app.route('/api/debug/<ticker>', methods=['GET'])
-def debug_ticker(ticker):
-    """Debug endpoint to check single ticker data"""
-    try:
-        df = yf.download(ticker, start='2024-01-01', progress=False, threads=True, timeout=20)
-        
-        if df is None or df.empty:
-            return jsonify({'error': 'No data', 'ticker': ticker})
-        
-        if isinstance(df.columns, pd.MultiIndex):
-            df = df.droplevel(1, axis=1)
-        
-        if 'Date' not in df.columns:
-            df = df.reset_index()
-        
-        df = df.dropna(subset=['Close'])
-        df = df.sort_values('Date').reset_index(drop=True)
-        
-        if len(df) < 60:
-            return jsonify({'error': 'Insufficient data', 'ticker': ticker, 'rows': len(df)})
-        
-        df = add_indicators(df)
-        df = df.dropna()
-        
-        current = df.iloc[-1]
-        prev = df.iloc[-2]
-        
-        macd_bullish = prev['MACD'] > prev['Signal']
-        price_above_sma = prev['Close'] > prev['SMA50']
-        should_entry = macd_bullish and price_above_sma
-        
-        return jsonify({
-            'ticker': ticker,
-            'last_date': str(current.name if hasattr(current, 'name') else ''),
-            'close': float(current['Close']),
-            'open': float(current['Open'] if 'Open' in current.index else current['Close']),
-            'macd': float(current['MACD']),
-            'signal_line': float(current['Signal']),
-            'sma50': float(current['SMA50']),
-            'prev_macd': float(prev['MACD']),
-            'prev_signal': float(prev['Signal']),
-            'prev_close': float(prev['Close']),
-            'prev_sma50': float(prev['SMA50']),
-            'macd_bullish': bool(macd_bullish),
-            'price_above_sma': bool(price_above_sma),
-            'should_entry': bool(should_entry),
-            'data_rows': len(df),
-        })
-    
-    except Exception as e:
-        return jsonify({'error': str(e), 'ticker': ticker})
 
 
 # ============================================================================
