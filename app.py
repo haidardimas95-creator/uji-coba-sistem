@@ -43,8 +43,14 @@ STORAGE_FILE = os.path.join(os.path.dirname(__file__), 'data', 'positions.json')
 METRICS_FILE = os.path.join(os.path.dirname(__file__), 'data', 'metrics.json')
 HISTORY_FILE = os.path.join(os.path.dirname(__file__), 'data', 'history.json')
 
-# Kompas100 verified tickers
-TICKERS = [
+# Featured stocks for scanning (high liquidity)
+FEATURED_TICKERS = [
+    'BBCA.JK', 'BBRI.JK', 'BMRI.JK', 'BBNI.JK',
+    'ASII.JK', 'UNVR.JK', 'TLKM.JK', 'INDF.JK', 'MYOR.JK', 'GOTO.JK',
+]
+
+# All Kompas100 verified tickers
+ALL_TICKERS = [
     'BBCA.JK', 'BBRI.JK', 'BMRI.JK', 'BBNI.JK',
     'ICBP.JK', 'INDF.JK', 'KLBF.JK', 'MYOR.JK', 'UNVR.JK', 'HMSP.JK',
     'TLKM.JK', 'EXCL.JK',
@@ -56,6 +62,9 @@ TICKERS = [
     'MTEL.JK', 'NCKL.JK', 'ARTO.JK', 'BREN.JK',
     'GPRA.JK', 'HRUM.JK', 'INTP.JK', 'TRIM.JK',
 ]
+
+USE_FEATURED_ONLY = os.environ.get('USE_FEATURED_ONLY', 'true').lower() == 'true'
+TICKERS = FEATURED_TICKERS if USE_FEATURED_ONLY else ALL_TICKERS
 
 TRANSACTION_COST = 0.003
 
