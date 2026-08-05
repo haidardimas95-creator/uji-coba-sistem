@@ -599,6 +599,59 @@ def get_tickers():
     return jsonify({'tickers': TICKERS, 'count': len(TICKERS)})
 
 
+@app.route('/api/debug/<ticker>', methods=['GET'])
+def debug_ticker(ticker):
+    """Debug endpoint to check single ticker data"""
+    try:
+        df = yf.download(ticker, start='2024-01-01', progress=False, threads=True, timeout=20)
+        
+        if df is None or df.empty:
+            return jsonify({'error': 'No data', 'ticker': ticker})
+        
+        if isinstance(df.columns, pd.MultiIndex):
+            df = df.droplevel(1, axis=1)
+        
+        if 'Date' not in df.columns:
+            df = df.reset_index()
+        
+        df = df.dropna(subset=['Close'])
+        df = df.sort_values('Date').reset_index(drop=True)
+        
+        if len(df) < 60:
+            return jsonify({'error': 'Insufficient data', 'ticker': ticker, 'rows': len(df)})
+        
+        df = add_indicators(df)
+        df = df.dropna()
+        
+        current = df.iloc[-1]
+        prev = df.iloc[-2]
+        
+        macd_bullish = prev['MACD'] > prev['Signal']
+        price_above_sma = prev['Close'] > prev['SMA50']
+        should_entry = macd_bullish and price_above_sma
+        
+        return jsonify({
+            'ticker': ticker,
+            'last_date': str(current.name if hasattr(current, 'name') else ''),
+            'close': float(current['Close']),
+            'open': float(current['Open'] if 'Open' in current.index else current['Close']),
+            'macd': float(current['MACD']),
+            'signal_line': float(current['Signal']),
+            'sma50': float(current['SMA50']),
+            'prev_macd': float(prev['MACD']),
+            'prev_signal': float(prev['Signal']),
+            'prev_close': float(prev['Close']),
+            'prev_sma50': float(prev['SMA50']),
+            'macd_bullish': bool(macd_bullish),
+            'price_above_sma': bool(price_above_sma),
+            'should_entry': bool(should_entry),
+            'data_rows': len(df),
+        })
+    
+    except Exception as e:
+        return jsonify({'error': str(e), 'ticker': ticker})
+
+
 # ============================================================================
 # AUTO SCANNER (Background Task)
 # ============================================================================
